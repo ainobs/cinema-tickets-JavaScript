@@ -9,10 +9,12 @@ export default class TicketService {
   }
 
   purchaseTickets(accountId, ...ticketTypeRequests) {
+
     //validate account ID
-    if(!Number.isInteger(accountId) || accountId <= 0) {
-      throw new InvalidPurchaseException("Invalid account ID. ID must be greater than 0")
-    }
+    this.#validateAccountId(accountId);
+
+    // ensure all ticket requests are instances of TicketTypeRequest
+    this.#validateTicketRequestFormat(ticketTypeRequests);
 
     //initialise counters
     let infantTickets = 0;
@@ -20,7 +22,6 @@ export default class TicketService {
     let adultTickets = 0;
     let totalTickets = 0;
     let totalAmountToPay = 0;
-    let totalSeatsToAllocate = childTickets + adultTickets;
 
     ticketTypeRequests.map(request => {
       switch(request.getTicketType()) {
@@ -38,7 +39,6 @@ export default class TicketService {
             totalAmountToPay += request.getNoOfTickets() * 25;
             break;
       }
-
       totalTickets = request.getNoOfTickets();
     });
 
@@ -50,8 +50,26 @@ export default class TicketService {
     this.ticketPaymentService.makePayment(accountId, totalAmountToPay);
 
     //reserve seat
+    const totalSeatsToAllocate = childTickets + adultTickets;
     this.seatReservationService.reserveSeat(accountId, totalSeatsToAllocate);
 
+  }
+
+
+  // method to validate account ID
+  #validateAccountId (accountId) {
+    if(!Number.isInteger(accountId) || accountId <= 0) {
+      throw new InvalidPurchaseException("Invalid account ID. ID must be an integer and greater than 0")
+    }
+  }
+
+   // method to validate ticket request format
+  #validateTicketRequestFormat(ticketTypeRequests) {
+    ticketTypeRequests.map(request => {
+      if (!(request instanceof TicketTypeRequest)) {
+        throw new InvalidPurchaseException("invalid ticket request format");
+      }
+    });
   }
 
   // method to check if totalTickets is above 25
@@ -63,8 +81,8 @@ export default class TicketService {
 
   // method to check if there is at least one adult ticket when purchasing either infant or child tickets
   #validateAdultRequirement(infantTickets, childTickets, adultTickets) {
-    if(adultTickets === 0 && childTickets > 0 || infantTickets > 0) {
-      throw new InvalidPurchaseException("Child or Infant tickets cannot be purchased without purchasing an Adult ticket")
+    if(adultTickets === 0 && (childTickets > 0 || infantTickets > 0)) {
+      throw new InvalidPurchaseException("child or infant tickets cannot be purchased without purchasing an adult ticket")
     }
   }
 }
