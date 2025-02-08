@@ -9,9 +9,9 @@ export default class TicketService {
   }
 
   purchaseTickets(accountId, ...ticketTypeRequests) {
-    //validates account ID
+    //validate account ID
     if(!Number.isInteger(accountId) || accountId <= 0) {
-      throw new Error("Invalid account ID. ID must be greater than 0")
+      throw new InvalidPurchaseException("Invalid account ID. ID must be greater than 0")
     }
 
     //initialise counters
@@ -39,7 +39,7 @@ export default class TicketService {
             break;
       }
 
-      totalTickets = request.request.getNoOfTickets();
+      totalTickets = request.getNoOfTickets();
     });
 
     //validate business rules
@@ -54,17 +54,17 @@ export default class TicketService {
 
   }
 
-  // method to check if ticket limits are above 25
+  // method to check if totalTickets is above 25
   #validateTicketLimit(totalTickets) {
     if(totalTickets > 25) {
-      throw new Error ("cannot order more than 25 tickets");
+      throw new InvalidPurchaseException("cannot purchase more than 25 tickets");
     }
   }
 
   // method to check if there is at least one adult ticket when purchasing either infant or child tickets
   #validateAdultRequirement(infantTickets, childTickets, adultTickets) {
     if(adultTickets === 0 && childTickets > 0 || infantTickets > 0) {
-      throw new Error ("Child and Infant tickets cannot be purchased without purchasing an Adult ticket")
+      throw new InvalidPurchaseException("Child or Infant tickets cannot be purchased without purchasing an Adult ticket")
     }
   }
 }
