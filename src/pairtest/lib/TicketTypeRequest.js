@@ -2,18 +2,20 @@
  * Immutable Object.
  */
 
+import InvalidPurchaseException from './InvalidPurchaseException.js';
+
 export default class TicketTypeRequest {
   #type;
 
   #noOfTickets;
 
   constructor(type, noOfTickets) {
-    if (!this.#Type.includes(type)) {
-      throw new TypeError(`type must be ${this.#Type.slice(0, -1).join(', ')}, or ${this.#Type.slice(-1)}`);
+    if (!TicketTypeRequest.#Type.includes(type)) {
+      throw new InvalidPurchaseException(`type must be ${TicketTypeRequest.#Type.slice(0, -1).join(', ')}, or ${TicketTypeRequest.#Type.slice(-1)}`);
     }
 
-    if (!Number.isInteger(noOfTickets)) {
-      throw new TypeError('noOfTickets must be an integer');
+    if (!Number.isInteger(noOfTickets) || noOfTickets <= 0) {
+      throw new InvalidPurchaseException('INVALID_TICKET_COUNT');
     }
 
     this.#type = type;
@@ -28,5 +30,5 @@ export default class TicketTypeRequest {
     return this.#type;
   }
 
-  #Type = ['ADULT', 'CHILD', 'INFANT'];
+  static #Type = ['ADULT', 'CHILD', 'INFANT'];
 }

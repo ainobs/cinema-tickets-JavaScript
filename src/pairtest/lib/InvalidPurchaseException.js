@@ -1,6 +1,8 @@
+import ErrorMessageHandler from "./ErrorMessageHandler.js";
+
 export default class InvalidPurchaseException extends Error {
-    constructor(message) {
-        super(message);
+    constructor(messageKey) {
+        super(ErrorMessageHandler.getMessage(messageKey));
         this.name = 'InvalidPurchaseException';
     }
 

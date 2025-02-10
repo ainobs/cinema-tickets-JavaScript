@@ -31,13 +31,16 @@ export default class TicketService {
 
           case 'CHILD':
             childTickets += request.getNoOfTickets();
-            totalAmountToPay += request.getNoOfTickets() * 15;
+            totalAmountToPay += childTickets * 15;
             break;
 
           case 'ADULT':
             adultTickets += request.getNoOfTickets();
-            totalAmountToPay += request.getNoOfTickets() * 25;
+            totalAmountToPay += adultTickets * 25;
             break;
+
+          default:
+              throw new InvalidPurchaseException(`${INVALID_TICKET_REQUEST}: ${request.getTicketType()}`);
       }
       totalTickets = request.getNoOfTickets();
     });
@@ -45,6 +48,7 @@ export default class TicketService {
     //validate business rules
     this.#validateTicketLimit(totalTickets);
     this.#validateAdultRequirement(infantTickets, childTickets, adultTickets);
+    this.#validateInfantAndAdultTicket(infantTickets, adultTickets);
 
     //process payment
     this.ticketPaymentService.makePayment(accountId, totalAmountToPay);
@@ -59,7 +63,7 @@ export default class TicketService {
   // method to validate account ID
   #validateAccountId (accountId) {
     if(!Number.isInteger(accountId) || accountId <= 0) {
-      throw new InvalidPurchaseException("Invalid account ID. ID must be an integer and greater than 0")
+      throw new InvalidPurchaseException("INVALID_ACCOUNT_ID");
     }
   }
 
@@ -67,7 +71,7 @@ export default class TicketService {
   #validateTicketRequestFormat(ticketTypeRequests) {
     ticketTypeRequests.map(request => {
       if (!(request instanceof TicketTypeRequest)) {
-        throw new InvalidPurchaseException("invalid ticket request format");
+        throw new InvalidPurchaseException("INVALID_TICKET_REQUEST");
       }
     });
   }
@@ -75,14 +79,21 @@ export default class TicketService {
   // method to check if totalTickets is above 25
   #validateTicketLimit(totalTickets) {
     if(totalTickets > 25) {
-      throw new InvalidPurchaseException("cannot purchase more than 25 tickets");
+      throw new InvalidPurchaseException("MAX_TICKET_LIMIT");
     }
   }
 
   // method to check if there is at least one adult ticket when purchasing either infant or child tickets
   #validateAdultRequirement(infantTickets, childTickets, adultTickets) {
     if(adultTickets === 0 && (childTickets > 0 || infantTickets > 0)) {
-      throw new InvalidPurchaseException("child or infant tickets cannot be purchased without purchasing an adult ticket")
+      throw new InvalidPurchaseException("ADULT_REQUIRED");
+    }
+  }
+
+  // method to check if the number of infant tickets is higher than adult tickets
+  #validateInfantAndAdultTicket(infantTickets, adultTickets) {
+    if(infantTickets > adultTickets) {
+      throw new InvalidPurchaseException("INVALID_INFANT_ADULT_PAIR");
     }
   }
 }
