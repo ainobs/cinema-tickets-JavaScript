@@ -39,18 +39,12 @@ describe('TicketService', ()=> {
 
         expect(() => ticketService.purchaseTickets(-6, request))
             .toThrow(new InvalidPurchaseException("INVALID_ACCOUNT_ID"));
-        
-        //expect(logger.warn).toHaveBeenCalledWith("Invalid account ID: -6");
 
         expect(() => ticketService.purchaseTickets(0, request))
             .toThrow(new InvalidPurchaseException("INVALID_ACCOUNT_ID"));
 
-        //expect(logger.warn).toHaveBeenCalledWith("Invalid account ID: 0");
-
         expect(() => ticketService.purchaseTickets('vic', request))
             .toThrow(new InvalidPurchaseException("INVALID_ACCOUNT_ID"));
-
-        //expect(logger.warn).toHaveBeenCalledWith("Invalid account ID: vic");
     });
 
 
@@ -138,8 +132,8 @@ describe('TicketService', ()=> {
     // Test to validate correct seat reservations
     test('should call SeatReservationService with correct number of seats', ()=> {
         const requests = [
-            new TicketTypeRequest('ADULT', 5), //4 seats
-            new TicketTypeRequest('CHILD', 4), //2 seats
+            new TicketTypeRequest('ADULT', 5), //5 seats
+            new TicketTypeRequest('CHILD', 4), //4 seats
             new TicketTypeRequest('INFANT', 2) //0 seat
         ];
         ticketService.purchaseTickets(10, ...requests);
