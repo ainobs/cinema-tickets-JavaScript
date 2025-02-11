@@ -12,17 +12,43 @@ This project contains a working implementation of a `TicketService` that:
 
 
 ********** TESTING ************
-Run npm install: to get all the dependencies needed to test the application.
-Run npm test
+
+Run `npm install`: to get all the dependencies needed to test the application.
+
+
+Run `npm test`
+
+
+After every test, log data can be found in `app.log` file under `log` directory.
+
 
 Test Scenarios:
-    √ should throw an error for an invalid account ID 
-    √ should throw an error if noOfTickets is 0 
+
+    √ should throw an error for an invalid account ID
+
+
+    √ should throw an error if noOfTickets is 0
+
+
     √ should throw an error if noOfTickets is not an integer
-    √ should throw an error if noOfTickets is negative                                                                           
-    √ should throw an error if an invalid ticket request is passed                                                   
-    √ should throw an error if more than 25 tickets are purchased     
+
+
+    √ should throw an error if noOfTickets is negative
+
+
+    √ should throw an error if an invalid ticket request is passed
+
+
+    √ should throw an error if more than 25 tickets are purchased
+
+
     √ should throw an error if either an infant or child ticket is purchased without an adult ticket
+
+
     √ should throw an error if the number of infant tickets purchased is higher than adult tickets
-    √ should call ticketPaymentService with correct amount                                    
+
+
+    √ should call ticketPaymentService with correct amount
+    
+               
     √ should call SeatReservationService with correct number of seats

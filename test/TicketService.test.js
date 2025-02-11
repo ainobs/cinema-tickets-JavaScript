@@ -1,6 +1,7 @@
 import TicketService from "../src/pairtest/TicketService";
 import TicketTypeRequest from "../src/pairtest/lib/TicketTypeRequest";
 import InvalidPurchaseException from "../src/pairtest/lib/InvalidPurchaseException";
+import logger from "../src/pairtest/utils/logger";
 
 // mock ticket payment and seat reservation services
 const mockTicketPaymentService = { makePayment: jest.fn() };
@@ -15,6 +16,19 @@ describe('TicketService', ()=> {
     // reset mocks before each test
     beforeEach(()=> {
         jest.clearAllMocks();
+
+         // Spy on logger methods but allow real logging
+        jest.spyOn(logger, "info").mockImplementation((message) => {
+            logger.constructor.prototype.info.call(logger, message);
+        });
+
+        jest.spyOn(logger, "warn").mockImplementation((message) => {
+            logger.constructor.prototype.warn.call(logger, message);
+        });
+
+        jest.spyOn(logger, "error").mockImplementation((message) => {
+            logger.constructor.prototype.error.call(logger, message);
+        });
     });
 
 
@@ -25,12 +39,18 @@ describe('TicketService', ()=> {
 
         expect(() => ticketService.purchaseTickets(-6, request))
             .toThrow(new InvalidPurchaseException("INVALID_ACCOUNT_ID"));
+        
+        //expect(logger.warn).toHaveBeenCalledWith("Invalid account ID: -6");
 
         expect(() => ticketService.purchaseTickets(0, request))
             .toThrow(new InvalidPurchaseException("INVALID_ACCOUNT_ID"));
 
+        //expect(logger.warn).toHaveBeenCalledWith("Invalid account ID: 0");
+
         expect(() => ticketService.purchaseTickets('vic', request))
             .toThrow(new InvalidPurchaseException("INVALID_ACCOUNT_ID"));
+
+        //expect(logger.warn).toHaveBeenCalledWith("Invalid account ID: vic");
     });
 
 
@@ -61,6 +81,8 @@ describe('TicketService', ()=> {
     test('should throw an error if an invalid ticket request is passed', () => {
         expect(() => ticketService.purchaseTickets(25, { type: 'ADULT', noOfTickets: 2 }))
         .toThrow(new InvalidPurchaseException("INVALID_TICKET_REQUEST"));
+
+        expect(logger.error).toHaveBeenCalledWith("Invalid ticket request format.");
     });
 
 
@@ -70,6 +92,8 @@ describe('TicketService', ()=> {
 
         expect(()=> ticketService.purchaseTickets(25, ...requests))
             .toThrow(new InvalidPurchaseException("MAX_TICKET_LIMIT"));
+
+        expect(logger.warn).toHaveBeenCalledWith("Ticket limit exceeded: 26");
     })
 
 
@@ -80,6 +104,8 @@ describe('TicketService', ()=> {
 
         expect(()=> ticketService.purchaseTickets(25, infantRequest, childRequest))
             .toThrow(new InvalidPurchaseException("ADULT_REQUIRED"));
+
+        expect(logger.warn).toHaveBeenCalledWith("Attempted to purchase child or infant tickets without an adult ticket.");
     })
 
 
@@ -90,6 +116,8 @@ describe('TicketService', ()=> {
 
         expect(()=> ticketService.purchaseTickets(25, infantRequest, adultRequest))
             .toThrow(new InvalidPurchaseException("INVALID_INFANT_ADULT_PAIR"));
+
+        expect(logger.warn).toHaveBeenCalledWith("More infant tickets than adult tickets.");
     })
 
     
@@ -103,19 +131,21 @@ describe('TicketService', ()=> {
         ticketService.purchaseTickets(25, ...requests);
 
         expect(mockTicketPaymentService.makePayment).toHaveBeenCalledWith(25, 130)
+        expect(logger.info).toHaveBeenCalledWith("Processing payment of £130 for account ID: 25");
     })
     
 
     // Test to validate correct seat reservations
     test('should call SeatReservationService with correct number of seats', ()=> {
         const requests = [
-            new TicketTypeRequest('ADULT', 4), //4 seats
-            new TicketTypeRequest('CHILD', 2), //2 seats
+            new TicketTypeRequest('ADULT', 5), //4 seats
+            new TicketTypeRequest('CHILD', 4), //2 seats
             new TicketTypeRequest('INFANT', 2) //0 seat
         ];
-        ticketService.purchaseTickets(25, ...requests);
+        ticketService.purchaseTickets(10, ...requests);
 
-        expect(mockSeatReservationService.reserveSeat).toHaveBeenCalledWith(25, 6);
+        expect(mockSeatReservationService.reserveSeat).toHaveBeenCalledWith(10, 9);
+        expect(logger.info).toHaveBeenCalledWith("Reserving 9 seats for account ID: 10");
     })
-
+    
 })
